@@ -213,7 +213,7 @@
       cursor: pointer;
     }
 
-    /* CALLED BOARD */
+    /* CALLED BOARD — 2x8 GRID PER COLUMN */
     .called-board-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -244,9 +244,10 @@
     .called-col-list {
       padding: 0.4rem;
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(8, minmax(46px, 1fr));
       gap: 0.35rem;
-      min-height: 360px;
+      min-height: 410px;
       align-content: start;
     }
 
@@ -316,6 +317,157 @@
       background: #fee2e2;
       color: #991b1b;
       border: 1.5px solid #fca5a5;
+    }
+
+    /* VERIFIED CARD MODAL */
+    .verify-modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.62);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem;
+    }
+
+    .verify-modal-backdrop.open {
+      display: flex;
+    }
+
+    .verify-modal {
+      background: #fff;
+      border: 3px solid #1e293b;
+      border-radius: 16px;
+      padding: 1rem;
+      width: 100%;
+      max-width: 470px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+    }
+
+    .verify-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.55rem;
+      gap: 0.5rem;
+    }
+
+    .verify-modal-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .verify-modal-status {
+      padding: 0.45rem 0.7rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 0.65rem;
+      text-align: center;
+    }
+
+    .verify-modal-status.valid {
+      background: #dcfce7;
+      color: #166534;
+      border: 1.5px solid #86efac;
+    }
+
+    .verify-modal-status.invalid {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1.5px solid #fca5a5;
+    }
+
+    .verify-bingo-headers {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+
+    .verify-bingo-headers div {
+      color: #fff;
+      font-weight: 700;
+      text-align: center;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    .verify-bingo-headers div:nth-child(1) { background: #dc2626; }
+    .verify-bingo-headers div:nth-child(2) { background: #ea580c; }
+    .verify-bingo-headers div:nth-child(3) { background: #16a34a; }
+    .verify-bingo-headers div:nth-child(4) { background: #2563eb; }
+    .verify-bingo-headers div:nth-child(5) { background: #7c3aed; }
+
+    .verify-card-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+    }
+
+    .verify-cell {
+      aspect-ratio: 1 / 1;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      background: #fff;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .verify-cell img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .verify-cell.uncalled {
+      opacity: 0.35;
+      filter: grayscale(80%);
+    }
+
+    .verify-cell.called {
+      border-color: #16a34a;
+      background: #f0fdf4;
+    }
+
+    .verify-cell.called::after {
+      content: "✓";
+      position: absolute;
+      top: 2px;
+      right: 3px;
+      background: #16a34a;
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      width: 15px;
+      height: 15px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .verify-cell.win-line {
+      border: 3px solid #eab308;
+      box-shadow: inset 0 0 0 2px #fde047;
+    }
+
+    .verify-legend {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      font-weight: 600;
     }
   </style>
 </head>
@@ -392,6 +544,26 @@
       </div>
     </div>
   </main>
+
+  <!-- STUDENT CARD VERIFICATION MODAL -->
+  <div class="verify-modal-backdrop" id="verify-modal-backdrop">
+    <div class="verify-modal">
+      <div class="verify-modal-header">
+        <div class="verify-modal-title" id="verify-modal-title">Card #0000</div>
+        <button class="btn" id="btn-close-verify-modal">Close</button>
+      </div>
+      <div class="verify-modal-status" id="verify-modal-status"></div>
+      <div class="verify-bingo-headers">
+        <div>B</div><div>I</div><div>N</div><div>G</div><div>O</div>
+      </div>
+      <div class="verify-card-grid" id="verify-card-grid"></div>
+      <div class="verify-legend">
+        <span>✓ Green = Called</span>
+        <span>Gold Border = Winning Line</span>
+        <span>Faded = Not Called</span>
+      </div>
+    </div>
+  </div>
 
   <script>
     const DEFAULT_FREE_SPACE = "https://lh3.googleusercontent.com/d/1eJxgc8SKGLrsWAsAgKAPZTFVZvrpSoMd | Free Space";
@@ -605,6 +777,41 @@
       });
     }
 
+    function showVerifiedCardModal(id, grid, calledSet, pat, winningIndices) {
+      const backdrop = document.getElementById("verify-modal-backdrop");
+      const titleEl = document.getElementById("verify-modal-title");
+      const statusEl = document.getElementById("verify-modal-status");
+      const gridEl = document.getElementById("verify-card-grid");
+
+      titleEl.textContent = `Student Card #${id}`;
+      const isWin = winningIndices.size > 0;
+      statusEl.className = "verify-modal-status " + (isWin ? "valid" : "invalid");
+      statusEl.textContent = isWin
+        ? `VERIFIED WINNER! (${pat.name})`
+        : `Not a valid ${pat.name} yet`;
+
+      gridEl.innerHTML = "";
+      grid.forEach((cell, idx) => {
+        const item = parseItem(cell.raw);
+        const isCalled = cell.isFree || calledSet.has(cell.raw);
+        const isWinCell = winningIndices.has(idx);
+
+        const div = document.createElement("div");
+        div.className =
+          "verify-cell " +
+          (isCalled ? "called" : "uncalled") +
+          (isWinCell ? " win-line" : "");
+
+        div.innerHTML = item.isImage
+          ? `<img src="${escapeHTML(item.value)}" alt="${escapeHTML(item.caption)}" />`
+          : escapeHTML(item.value);
+
+        gridEl.appendChild(div);
+      });
+
+      backdrop.classList.add("open");
+    }
+
     document.getElementById("btn-call-next").addEventListener("click", () => {
       const remaining = DEFAULT_ITEMS.filter(item => !calledItems.includes(item));
       if (remaining.length === 0) return;
@@ -640,14 +847,33 @@
       const grid = generateCardGrid(id);
       const calledSet = new Set(calledItems);
       const pat = BINGO_PATTERNS[patternKey] || BINGO_PATTERNS.standard;
-      const hasWin = pat.lines.some(line => line.every(idx => grid[idx].isFree || calledSet.has(grid[idx].raw)));
 
+      const winningIndices = new Set();
+      pat.lines.forEach(line => {
+        if (line.every(idx => grid[idx].isFree || calledSet.has(grid[idx].raw))) {
+          line.forEach(idx => winningIndices.add(idx));
+        }
+      });
+
+      const hasWin = winningIndices.size > 0;
       if (hasWin) {
         resEl.className = "verifier-result valid";
         resEl.textContent = `VERIFIED WINNER! Card #${id} has ${pat.name}.`;
       } else {
         resEl.className = "verifier-result invalid";
         resEl.textContent = `Not a valid ${pat.name} yet on Card #${id}.`;
+      }
+
+      showVerifiedCardModal(id, grid, calledSet, pat, winningIndices);
+    });
+
+    document.getElementById("btn-close-verify-modal").addEventListener("click", () => {
+      document.getElementById("verify-modal-backdrop").classList.remove("open");
+    });
+
+    document.getElementById("verify-modal-backdrop").addEventListener("click", (e) => {
+      if (e.target === e.currentTarget) {
+        e.currentTarget.classList.remove("open");
       }
     });
 
