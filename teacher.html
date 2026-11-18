@@ -17,12 +17,10 @@
       --border-color: #cbd5e1;
       --primary: #2563eb;
       --primary-hover: #1d4ed8;
-      --primary-light: #eff6ff;
       --success: #16a34a;
       --danger: #dc2626;
-      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-      --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.09);
-      --radius: 12px;
+      --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.08);
+      --radius: 14px;
       --font-sans: "Fredoka", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
@@ -33,28 +31,30 @@
       font-family: var(--font-sans);
     }
 
-    body {
+    html, body {
+      height: 100%;
       background-color: var(--bg-page);
       color: var(--text-main);
       line-height: 1.3;
-      padding: 0.6rem;
+      padding: 0.75rem;
     }
 
     main {
-      max-width: 1320px;
-      margin: 0 auto;
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
     }
 
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.35rem;
-      padding: 0.5rem 0.9rem;
-      font-size: 0.9rem;
+      gap: 0.4rem;
+      padding: 0.65rem 1.1rem;
+      font-size: 1.05rem;
       font-weight: 600;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      border: 1.5px solid var(--border-color);
       background: var(--bg-card);
       color: var(--text-main);
       cursor: pointer;
@@ -80,34 +80,37 @@
     .btn-danger:hover { background: #fee2e2; }
 
     .btn-lg {
-      padding: 0.72rem 1.35rem;
-      font-size: 1.08rem;
-      border-radius: 10px;
+      padding: 0.95rem 1.5rem;
+      font-size: 1.3rem;
+      border-radius: 12px;
     }
 
     .teacher-grid {
       display: grid;
-      grid-template-columns: 380px 1fr;
-      gap: 1rem;
-      align-items: start;
+      grid-template-columns: 450px 1fr;
+      gap: 1.1rem;
+      height: 100%;
+      align-items: stretch;
     }
 
-    @media (max-width: 860px) {
-      .teacher-grid { grid-template-columns: 1fr; }
+    @media (max-width: 900px) {
+      .teacher-grid { grid-template-columns: 1fr; height: auto; }
     }
 
     .panel {
       background: var(--bg-card);
       border: 2px solid var(--border-color);
       border-radius: var(--radius);
-      padding: 1rem;
+      padding: 1.15rem;
       box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
     }
 
     .panel-title {
-      font-size: 1rem;
+      font-size: 1.25rem;
       font-weight: 700;
-      margin-bottom: 0.65rem;
+      margin-bottom: 0.75rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -116,23 +119,24 @@
     .current-call-box {
       background: var(--bg-subtle);
       border: 3px solid #1e293b;
-      border-radius: 14px;
-      padding: 0.9rem;
+      border-radius: 16px;
+      padding: 1rem;
       text-align: center;
-      margin-bottom: 0.85rem;
-      min-height: 270px;
+      margin-bottom: 0.9rem;
+      flex: 1;
+      min-height: 340px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
+      gap: 0.65rem;
     }
 
     .call-letter-badge {
       display: inline-block;
-      padding: 0.2rem 0.95rem;
+      padding: 0.25rem 1.2rem;
       border-radius: 999px;
-      font-size: 1.35rem;
+      font-size: 1.65rem;
       font-weight: 700;
       color: #fff;
       background: var(--primary);
@@ -145,29 +149,29 @@
     .call-letter-badge.col-O { background: #7c3aed; }
 
     .current-call-img {
-      width: 195px;
-      height: 195px;
+      width: 280px;
+      height: 280px;
       object-fit: contain;
-      border-radius: 10px;
+      border-radius: 12px;
       background: #fff;
       border: 2px solid var(--border-color);
-      padding: 4px;
+      padding: 6px;
     }
 
     .current-call-text {
-      font-size: 1.35rem;
+      font-size: 1.6rem;
       font-weight: 700;
     }
 
     .caller-controls {
       display: flex;
       flex-direction: column;
-      gap: 0.55rem;
+      gap: 0.65rem;
     }
 
     .caller-sub-row {
       display: flex;
-      gap: 0.5rem;
+      gap: 0.65rem;
     }
 
     .caller-sub-row .btn { flex: 1; }
@@ -176,23 +180,23 @@
     .pattern-bar {
       display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.7rem;
       background: var(--bg-subtle);
       border: 1.5px solid var(--border-color);
-      padding: 0.45rem 0.65rem;
-      border-radius: 9px;
-      margin-bottom: 0.75rem;
+      padding: 0.55rem 0.8rem;
+      border-radius: 10px;
+      margin-bottom: 0.85rem;
     }
 
     .pattern-mini-diagram {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 1.5px;
-      width: 28px;
-      height: 28px;
-      padding: 2px;
+      gap: 2px;
+      width: 34px;
+      height: 34px;
+      padding: 2.5px;
       background: #1e293b;
-      border-radius: 4px;
+      border-radius: 5px;
       flex-shrink: 0;
     }
 
@@ -204,7 +208,7 @@
       flex: 1;
       border: none;
       background: transparent;
-      font-size: 0.9rem;
+      font-size: 1.05rem;
       font-weight: 700;
       color: var(--text-main);
       outline: none;
@@ -215,22 +219,25 @@
     .called-board-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 0.5rem;
+      gap: 0.65rem;
+      flex: 1;
     }
 
     .called-col {
       background: var(--bg-subtle);
       border: 2px solid var(--border-color);
-      border-radius: 10px;
+      border-radius: 12px;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     .called-col-header {
       color: #fff;
       font-weight: 700;
-      font-size: 1.15rem;
+      font-size: 1.45rem;
       text-align: center;
-      padding: 0.32rem 0;
+      padding: 0.45rem 0;
     }
 
     .called-col[data-col="B"] .called-col-header { background: #dc2626; }
@@ -240,11 +247,11 @@
     .called-col[data-col="O"] .called-col-header { background: #7c3aed; }
 
     .called-col-list {
-      padding: 0.4rem;
+      padding: 0.5rem;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 0.35rem;
-      min-height: 220px;
+      gap: 0.45rem;
+      flex: 1;
       align-content: start;
     }
 
@@ -252,12 +259,12 @@
       aspect-ratio: 1 / 1;
       background: #fff;
       border: 1.5px solid var(--border-color);
-      border-radius: 6px;
+      border-radius: 8px;
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.72rem;
+      font-size: 0.8rem;
       font-weight: 600;
       text-align: center;
       padding: 2px;
@@ -265,8 +272,8 @@
     }
 
     .called-chip.latest {
-      border: 2.5px solid #eab308;
-      box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.45);
+      border: 3px solid #eab308;
+      box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.45);
     }
 
     .called-chip img {
@@ -278,26 +285,26 @@
     /* CARD VERIFIER */
     .verifier-row {
       display: flex;
-      gap: 0.45rem;
-      margin-top: 0.85rem;
-      padding-top: 0.85rem;
+      gap: 0.5rem;
+      margin-top: 0.9rem;
+      padding-top: 0.9rem;
       border-top: 1.5px solid var(--border-color);
     }
 
     .verifier-row input {
       flex: 1;
-      padding: 0.45rem 0.65rem;
+      padding: 0.55rem 0.75rem;
       border: 1.5px solid var(--border-color);
-      border-radius: 8px;
-      font-size: 0.9rem;
+      border-radius: 9px;
+      font-size: 1.05rem;
       font-weight: 600;
     }
 
     .verifier-result {
-      margin-top: 0.55rem;
-      padding: 0.55rem 0.75rem;
-      border-radius: 8px;
-      font-size: 0.85rem;
+      margin-top: 0.6rem;
+      padding: 0.65rem 0.85rem;
+      border-radius: 9px;
+      font-size: 0.95rem;
       font-weight: 600;
       display: none;
     }
@@ -324,7 +331,7 @@
       <div class="panel">
         <div class="panel-title">
           <span>Teacher Caller</span>
-          <span id="call-counter" style="color: var(--text-muted); font-size: 0.85rem;">0 / 75 Called</span>
+          <span id="call-counter" style="color: var(--text-muted); font-size: 1rem;">0 / 75 Called</span>
         </div>
 
         <div class="pattern-bar">
@@ -341,7 +348,7 @@
         </div>
 
         <div class="current-call-box" id="current-call-box">
-          <div style="color: var(--text-muted); font-weight: 600;">Press "Call Next Item" to start!</div>
+          <div style="color: var(--text-muted); font-size: 1.15rem; font-weight: 600;">Press "Call Next Item" to start!</div>
         </div>
 
         <div class="caller-controls">
@@ -363,7 +370,7 @@
       <div class="panel">
         <div class="panel-title">
           <span>Called Items Board</span>
-          <span style="color: var(--text-muted); font-size: 0.82rem;">Grouped by B - I - N - G - O</span>
+          <span style="color: var(--text-muted); font-size: 0.95rem;">Grouped by B - I - N - G - O</span>
         </div>
         <div class="called-board-grid">
           <div class="called-col" data-col="B">
@@ -565,92 +572,4 @@
       const lit = new Set((BINGO_PATTERNS[patternKey] || BINGO_PATTERNS.standard).preview);
       el.innerHTML = "";
       for (let i = 0; i < 25; i++) {
-        const s = document.createElement("span");
-        if (lit.has(i)) s.className = "lit";
-        else if (i === 12) s.className = "free-dot";
-        el.appendChild(s);
-      }
-    }
-
-    function renderCallerUI() {
-      document.getElementById("call-counter").textContent = `${calledItems.length} / ${DEFAULT_ITEMS.length} Called`;
-      const box = document.getElementById("current-call-box");
-
-      if (calledItems.length === 0) {
-        box.innerHTML = `<div style="color: var(--text-muted); font-weight: 600;">Press "Call Next Item" to start!</div>`;
-      } else {
-        const latest = parseItem(calledItems[calledItems.length - 1]);
-        box.innerHTML = `
-          <span class="call-letter-badge col-${latest.col}">Column ${latest.col}</span>
-          ${latest.isImage
-            ? `<img class="current-call-img" src="${escapeHTML(latest.value)}" alt="${escapeHTML(latest.caption)}" />`
-            : `<div class="current-call-text">${escapeHTML(latest.value)}</div>`}
-        `;
-      }
-
-      ["B", "I", "N", "G", "O"].forEach(col => {
-        document.getElementById(`called-col-${col}`).innerHTML = "";
-      });
-
-      calledItems.forEach((raw, idx) => {
-        const item = parseItem(raw);
-        const chip = document.createElement("div");
-        chip.className = "called-chip" + (idx === calledItems.length - 1 ? " latest" : "");
-        chip.innerHTML = item.isImage
-          ? `<img src="${escapeHTML(item.value)}" alt="${escapeHTML(item.caption)}" />`
-          : escapeHTML(item.value);
-        document.getElementById(`called-col-${item.col}`).appendChild(chip);
-      });
-    }
-
-    document.getElementById("btn-call-next").addEventListener("click", () => {
-      const remaining = DEFAULT_ITEMS.filter(item => !calledItems.includes(item));
-      if (remaining.length === 0) return;
-      const pick = remaining[Math.floor(Math.random() * remaining.length)];
-      calledItems.push(pick);
-      renderCallerUI();
-    });
-
-    document.getElementById("btn-undo-call").addEventListener("click", () => {
-      calledItems.pop();
-      renderCallerUI();
-    });
-
-    document.getElementById("btn-reset-game").addEventListener("click", () => {
-      calledItems = [];
-      document.getElementById("verifier-result").style.display = "none";
-      renderCallerUI();
-    });
-
-    document.getElementById("teacher-pattern-select").addEventListener("change", (e) => {
-      patternKey = e.target.value;
-      renderMiniPattern();
-    });
-
-    document.getElementById("btn-verify-card").addEventListener("click", () => {
-      const id = Number(document.getElementById("verify-card-input").value);
-      const resEl = document.getElementById("verifier-result");
-      if (!id || id < 1000 || id > 9999) {
-        resEl.className = "verifier-result invalid";
-        resEl.textContent = "Enter a valid 4-digit Card # (1000–9999).";
-        return;
-      }
-      const grid = generateCardGrid(id);
-      const calledSet = new Set(calledItems);
-      const pat = BINGO_PATTERNS[patternKey] || BINGO_PATTERNS.standard;
-      const hasWin = pat.lines.some(line => line.every(idx => grid[idx].isFree || calledSet.has(grid[idx].raw)));
-
-      if (hasWin) {
-        resEl.className = "verifier-result valid";
-        resEl.textContent = `VERIFIED WINNER! Card #${id} has ${pat.name}.`;
-      } else {
-        resEl.className = "verifier-result invalid";
-        resEl.textContent = `Not a valid ${pat.name} yet on Card #${id}.`;
-      }
-    });
-
-    renderMiniPattern();
-    renderCallerUI();
-  </script>
-</body>
-</html>
+        const
