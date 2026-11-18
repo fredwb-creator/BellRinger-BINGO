@@ -128,6 +128,13 @@
       align-items: center;
       justify-content: center;
       gap: 0.55rem;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .current-call-box.wild-active {
+      background: #fefce8;
+      border-color: #eab308;
+      box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.25);
     }
 
     .call-letter-badge {
@@ -145,6 +152,11 @@
     .call-letter-badge.col-N { background: #16a34a; }
     .call-letter-badge.col-G { background: #2563eb; }
     .call-letter-badge.col-O { background: #7c3aed; }
+    .call-letter-badge.col-WILD {
+      background: linear-gradient(135deg, #f59e0b, #eab308);
+      color: #1e293b;
+      border: 2px solid #b45309;
+    }
 
     .current-call-img {
       width: 215px;
@@ -211,6 +223,40 @@
       color: var(--text-main);
       outline: none;
       cursor: pointer;
+    }
+
+    /* WILD CARD STRIP ON CALLED BOARD */
+    .wild-strip {
+      display: none;
+      align-items: center;
+      gap: 0.65rem;
+      background: #fefce8;
+      border: 2px solid #eab308;
+      border-radius: 10px;
+      padding: 0.4rem 0.65rem;
+      margin-bottom: 0.55rem;
+    }
+
+    .wild-strip.has-wild {
+      display: flex;
+    }
+
+    .wild-strip-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #92400e;
+      white-space: nowrap;
+    }
+
+    .wild-strip-list {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .wild-strip .called-chip {
+      width: 48px;
+      height: 48px;
     }
 
     /* CALLED BOARD — 2x8 GRID PER COLUMN */
@@ -478,7 +524,7 @@
       <div class="panel">
         <div class="panel-title">
           <span>Teacher Caller</span>
-          <span id="call-counter" style="color: var(--text-muted); font-size: 0.85rem;">0 / 75 Called</span>
+          <span id="call-counter" style="color: var(--text-muted); font-size: 0.85rem;">0 / 76 Called</span>
         </div>
 
         <div class="pattern-bar">
@@ -517,8 +563,15 @@
       <div class="panel">
         <div class="panel-title">
           <span>Called Items Board</span>
-          <span style="color: var(--text-muted); font-size: 0.82rem;">Grouped by B - I - N - G - O</span>
+          <span style="color: var(--text-muted); font-size: 0.82rem;">Grouped by B - I - N - G - O + Wild</span>
         </div>
+
+        <!-- WILD CARD CALLED STRIP -->
+        <div class="wild-strip" id="wild-strip">
+          <span class="wild-strip-label">★ Wild Card Called:</span>
+          <div class="wild-strip-list" id="called-col-WILD"></div>
+        </div>
+
         <div class="called-board-grid">
           <div class="called-col" data-col="B">
             <div class="called-col-header">B</div>
@@ -567,6 +620,7 @@
 
   <script>
     const DEFAULT_FREE_SPACE = "https://lh3.googleusercontent.com/d/1eJxgc8SKGLrsWAsAgKAPZTFVZvrpSoMd | Free Space";
+    const WILD_CARD_ITEM = "WILD: https://lh3.googleusercontent.com/d/1wp92-b9Cgu0gL9j1qhuX3ODEP2eYglYR | Wild Card";
 
     const BINGO_PATTERNS = {
       standard: {
@@ -598,7 +652,7 @@
       }
     };
 
-    const DEFAULT_ITEMS = [
+    const COLUMN_ITEMS = [
       "B: https://lh3.googleusercontent.com/d/1tcK_F9j8d9yOM1b1Lm7L2ihlcSoTMfom | B - Image 1",
       "B: https://lh3.googleusercontent.com/d/1Jz_wF2BS7qV9IgMM-ABfsTiDDYgW6hPl | B - Image 2",
       "B: https://lh3.googleusercontent.com/d/1NABLhdHf_9MDDolB7Uv0jIODR07IYuCD | B - Image 3",
@@ -676,6 +730,8 @@
       "O: https://lh3.googleusercontent.com/d/1bvWh38Fqu0B71zUjQ6pBvsuqlbqDBU4O | O - Image 75"
     ];
 
+    const ALL_CALLABLE_ITEMS = [...COLUMN_ITEMS, WILD_CARD_ITEM];
+
     let calledItems = [];
     let patternKey = "standard";
 
@@ -684,7 +740,7 @@
     }
 
     function parseItem(rawStr) {
-      const match = String(rawStr).trim().match(/^([BINGO]):\s*(.+)$/i);
+      const match = String(rawStr).trim().match(/^(B|I|N|G|O|WILD):\s*(.+)$/i);
       const col = match ? match[1].toUpperCase() : "B";
       const rest = match ? match[2].trim() : String(rawStr).trim();
       const parts = rest.split("|").map(s => s.trim());
@@ -714,13 +770,14 @@
         return copy;
       };
       const buckets = { B: [], I: [], N: [], G: [], O: [] };
-      DEFAULT_ITEMS.forEach(raw => {
+      COLUMN_ITEMS.forEach(raw => {
         const m = raw.match(/^([BINGO]):/i);
         if (m) buckets[m[1].toUpperCase()].push(raw);
       });
       const letters = ["B", "I", "N", "G", "O"];
       const cols = {};
       letters.forEach(l => { cols[l] = seededShuffle(buckets[l]).slice(0, l === "N" ? 4 : 5); });
+
       const grid = [];
       for (let r = 0; r < 5; r++) {
         for (let c = 0; c < 5; c++) {
@@ -731,6 +788,14 @@
           }
         }
       }
+
+      // ~40% of student cards receive the Wild Card in one non-free square
+      if (rng() < 0.4) {
+        const nonFreeIndices = grid.map((_, idx) => idx).filter(idx => idx !== 12);
+        const wildSpot = nonFreeIndices[Math.floor(rng() * nonFreeIndices.length)];
+        grid[wildSpot] = { isFree: false, raw: WILD_CARD_ITEM };
+      }
+
       return grid;
     }
 
@@ -747,27 +812,33 @@
     }
 
     function renderCallerUI() {
-      document.getElementById("call-counter").textContent = `${calledItems.length} / ${DEFAULT_ITEMS.length} Called`;
+      document.getElementById("call-counter").textContent = `${calledItems.length} / ${ALL_CALLABLE_ITEMS.length} Called`;
       const box = document.getElementById("current-call-box");
 
       if (calledItems.length === 0) {
+        box.classList.remove("wild-active");
         box.innerHTML = `<div style="color: var(--text-muted); font-weight: 600;">Press "Call Next Item" to start!</div>`;
       } else {
         const latest = parseItem(calledItems[calledItems.length - 1]);
+        const isWild = latest.col === "WILD";
+        box.classList.toggle("wild-active", isWild);
+        const badgeLabel = isWild ? "★ WILD CARD ★" : `Column ${latest.col}`;
         box.innerHTML = `
-          <span class="call-letter-badge col-${latest.col}">Column ${latest.col}</span>
+          <span class="call-letter-badge col-${latest.col}">${badgeLabel}</span>
           ${latest.isImage
             ? `<img class="current-call-img" src="${escapeHTML(latest.value)}" alt="${escapeHTML(latest.caption)}" />`
             : `<div class="current-call-text">${escapeHTML(latest.value)}</div>`}
         `;
       }
 
-      ["B", "I", "N", "G", "O"].forEach(col => {
+      ["B", "I", "N", "G", "O", "WILD"].forEach(col => {
         document.getElementById(`called-col-${col}`).innerHTML = "";
       });
 
+      let hasWildCalled = false;
       calledItems.forEach((raw, idx) => {
         const item = parseItem(raw);
+        if (item.col === "WILD") hasWildCalled = true;
         const chip = document.createElement("div");
         chip.className = "called-chip" + (idx === calledItems.length - 1 ? " latest" : "");
         chip.innerHTML = item.isImage
@@ -775,6 +846,8 @@
           : escapeHTML(item.value);
         document.getElementById(`called-col-${item.col}`).appendChild(chip);
       });
+
+      document.getElementById("wild-strip").classList.toggle("has-wild", hasWildCalled);
     }
 
     function showVerifiedCardModal(id, grid, calledSet, pat, winningIndices) {
@@ -813,7 +886,7 @@
     }
 
     document.getElementById("btn-call-next").addEventListener("click", () => {
-      const remaining = DEFAULT_ITEMS.filter(item => !calledItems.includes(item));
+      const remaining = ALL_CALLABLE_ITEMS.filter(item => !calledItems.includes(item));
       if (remaining.length === 0) return;
       const pick = remaining[Math.floor(Math.random() * remaining.length)];
       calledItems.push(pick);
