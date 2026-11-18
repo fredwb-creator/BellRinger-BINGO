@@ -74,6 +74,20 @@
     }
     .btn-primary:hover { background: var(--primary-hover); }
 
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+      border-color: var(--success);
+    }
+    .btn-success:hover { background: #15803d; }
+
+    .btn-warning {
+      background: #f59e0b;
+      color: #1e293b;
+      border-color: #d97706;
+    }
+    .btn-warning:hover { background: #eab308; }
+
     .btn-danger {
       background: #fef2f2;
       color: var(--danger);
@@ -116,6 +130,8 @@
     }
 
     .current-call-box {
+      position: relative;
+      overflow: hidden;
       background: var(--bg-subtle);
       border: 3px solid #1e293b;
       border-radius: 14px;
@@ -135,6 +151,28 @@
       background: #fefce8;
       border-color: #eab308;
       box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.25);
+    }
+
+    /* AUTO-CALL COUNTDOWN BAR */
+    .auto-progress-track {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 7px;
+      background: rgba(148, 163, 184, 0.25);
+      display: none;
+    }
+
+    .auto-progress-track.active {
+      display: block;
+    }
+
+    .auto-progress-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #16a34a, #2563eb);
+      transform-origin: left center;
     }
 
     .call-letter-badge {
@@ -177,6 +215,77 @@
       display: flex;
       flex-direction: column;
       gap: 0.55rem;
+    }
+
+    /* AUTO-CALL CONTROL BAR */
+    .auto-call-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.45rem;
+      background: var(--bg-subtle);
+      border: 1.5px solid var(--border-color);
+      padding: 0.42rem 0.55rem;
+      border-radius: 9px;
+    }
+
+    .auto-call-bar .btn {
+      padding: 0.42rem 0.75rem;
+      font-size: 0.88rem;
+      white-space: nowrap;
+    }
+
+    .interval-control {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.28rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .step-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      border: 1.5px solid var(--border-color);
+      background: #fff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-main);
+    }
+
+    .step-btn:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+    }
+
+    .interval-control input {
+      width: 44px;
+      text-align: center;
+      padding: 0.22rem 0.15rem;
+      border: 1.5px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-main);
+      background: #fff;
+    }
+
+    .auto-countdown-pill {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      min-width: 34px;
+      text-align: right;
+    }
+
+    .auto-countdown-pill.running {
+      color: var(--success);
     }
 
     .caller-sub-row {
@@ -541,11 +650,29 @@
         </div>
 
         <div class="current-call-box" id="current-call-box">
-          <div style="color: var(--text-muted); font-weight: 600;">Press "Call Next Item" to start!</div>
+          <div id="current-call-content" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.55rem;">
+            <div style="color: var(--text-muted); font-weight: 600;">Press "Call Next Item" or "▶ Auto" to start!</div>
+          </div>
+          <div class="auto-progress-track" id="auto-progress-track">
+            <div class="auto-progress-fill" id="auto-progress-fill"></div>
+          </div>
         </div>
 
         <div class="caller-controls">
           <button class="btn btn-primary btn-lg" id="btn-call-next">Call Next Item</button>
+
+          <!-- AUTO-CALL CONTROLS -->
+          <div class="auto-call-bar">
+            <button class="btn btn-success" id="btn-auto-toggle" title="Automatically advance calls">▶ Auto</button>
+            <div class="interval-control" title="Seconds between calls">
+              <button type="button" class="step-btn" id="btn-sec-down" aria-label="Decrease seconds">−</button>
+              <input type="number" id="auto-seconds-input" value="7" min="1" max="120" aria-label="Seconds per call" />
+              <span>sec</span>
+              <button type="button" class="step-btn" id="btn-sec-up" aria-label="Increase seconds">+</button>
+            </div>
+            <span class="auto-countdown-pill" id="auto-countdown-label">Off</span>
+          </div>
+
           <div class="caller-sub-row">
             <button class="btn" id="btn-undo-call">Undo Last</button>
             <button class="btn btn-danger" id="btn-reset-game">New Game</button>
@@ -735,6 +862,12 @@
     let calledItems = [];
     let patternKey = "standard";
 
+    // Auto-call state
+    let autoRunning = false;
+    let autoIntervalSec = 7;
+    let autoDeadline = 0;
+    let autoTickTimer = null;
+
     function escapeHTML(str) {
       return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
@@ -814,16 +947,17 @@
     function renderCallerUI() {
       document.getElementById("call-counter").textContent = `${calledItems.length} / ${ALL_CALLABLE_ITEMS.length} Called`;
       const box = document.getElementById("current-call-box");
+      const content = document.getElementById("current-call-content");
 
       if (calledItems.length === 0) {
         box.classList.remove("wild-active");
-        box.innerHTML = `<div style="color: var(--text-muted); font-weight: 600;">Press "Call Next Item" to start!</div>`;
+        content.innerHTML = `<div style="color: var(--text-muted); font-weight: 600;">Press "Call Next Item" or "▶ Auto" to start!</div>`;
       } else {
         const latest = parseItem(calledItems[calledItems.length - 1]);
         const isWild = latest.col === "WILD";
         box.classList.toggle("wild-active", isWild);
         const badgeLabel = isWild ? "★ WILD CARD ★" : `Column ${latest.col}`;
-        box.innerHTML = `
+        content.innerHTML = `
           <span class="call-letter-badge col-${latest.col}">${badgeLabel}</span>
           ${latest.isImage
             ? `<img class="current-call-img" src="${escapeHTML(latest.value)}" alt="${escapeHTML(latest.caption)}" />`
@@ -848,6 +982,97 @@
       });
 
       document.getElementById("wild-strip").classList.toggle("has-wild", hasWildCalled);
+    }
+
+    function callNextItem() {
+      const remaining = ALL_CALLABLE_ITEMS.filter(item => !calledItems.includes(item));
+      if (remaining.length === 0) {
+        stopAutoCall();
+        return false;
+      }
+      const pick = remaining[Math.floor(Math.random() * remaining.length)];
+      calledItems.push(pick);
+      renderCallerUI();
+      if (calledItems.length >= ALL_CALLABLE_ITEMS.length) {
+        stopAutoCall();
+      }
+      return true;
+    }
+
+    function resetAutoDeadline() {
+      autoDeadline = Date.now() + autoIntervalSec * 1000;
+      updateAutoCountdownUI();
+    }
+
+    function updateAutoCountdownUI() {
+      const label = document.getElementById("auto-countdown-label");
+      const track = document.getElementById("auto-progress-track");
+      const fill = document.getElementById("auto-progress-fill");
+
+      if (!autoRunning) {
+        label.textContent = "Off";
+        label.classList.remove("running");
+        track.classList.remove("active");
+        fill.style.transform = "scaleX(1)";
+        return;
+      }
+
+      const remainingMs = Math.max(0, autoDeadline - Date.now());
+      const remainingSec = Math.ceil(remainingMs / 1000);
+      const ratio = Math.max(0, Math.min(1, remainingMs / (autoIntervalSec * 1000)));
+
+      label.textContent = `${remainingSec}s`;
+      label.classList.add("running");
+      track.classList.add("active");
+      fill.style.transform = `scaleX(${ratio})`;
+    }
+
+    function startAutoCall() {
+      if (calledItems.length >= ALL_CALLABLE_ITEMS.length) return;
+      autoRunning = true;
+      const btn = document.getElementById("btn-auto-toggle");
+      btn.textContent = "⏸ Pause";
+      btn.classList.remove("btn-success");
+      btn.classList.add("btn-warning");
+
+      // If game hasn't started yet, call the first item immediately
+      if (calledItems.length === 0) {
+        callNextItem();
+      }
+
+      resetAutoDeadline();
+      clearInterval(autoTickTimer);
+      autoTickTimer = setInterval(() => {
+        if (!autoRunning) return;
+        if (Date.now() >= autoDeadline) {
+          const ok = callNextItem();
+          if (ok && autoRunning) {
+            resetAutoDeadline();
+          }
+        } else {
+          updateAutoCountdownUI();
+        }
+      }, 100);
+    }
+
+    function stopAutoCall() {
+      autoRunning = false;
+      clearInterval(autoTickTimer);
+      autoTickTimer = null;
+      const btn = document.getElementById("btn-auto-toggle");
+      btn.textContent = "▶ Auto";
+      btn.classList.remove("btn-warning");
+      btn.classList.add("btn-success");
+      updateAutoCountdownUI();
+    }
+
+    function setAutoSeconds(val) {
+      const clamped = Math.max(1, Math.min(120, Math.round(Number(val) || 7)));
+      autoIntervalSec = clamped;
+      document.getElementById("auto-seconds-input").value = clamped;
+      if (autoRunning) {
+        resetAutoDeadline();
+      }
     }
 
     function showVerifiedCardModal(id, grid, calledSet, pat, winningIndices) {
@@ -886,19 +1111,35 @@
     }
 
     document.getElementById("btn-call-next").addEventListener("click", () => {
-      const remaining = ALL_CALLABLE_ITEMS.filter(item => !calledItems.includes(item));
-      if (remaining.length === 0) return;
-      const pick = remaining[Math.floor(Math.random() * remaining.length)];
-      calledItems.push(pick);
-      renderCallerUI();
+      callNextItem();
+      if (autoRunning) resetAutoDeadline();
+    });
+
+    document.getElementById("btn-auto-toggle").addEventListener("click", () => {
+      if (autoRunning) stopAutoCall();
+      else startAutoCall();
+    });
+
+    document.getElementById("btn-sec-down").addEventListener("click", () => {
+      setAutoSeconds(autoIntervalSec - 1);
+    });
+
+    document.getElementById("btn-sec-up").addEventListener("click", () => {
+      setAutoSeconds(autoIntervalSec + 1);
+    });
+
+    document.getElementById("auto-seconds-input").addEventListener("change", (e) => {
+      setAutoSeconds(e.target.value);
     });
 
     document.getElementById("btn-undo-call").addEventListener("click", () => {
+      stopAutoCall();
       calledItems.pop();
       renderCallerUI();
     });
 
     document.getElementById("btn-reset-game").addEventListener("click", () => {
+      stopAutoCall();
       calledItems = [];
       document.getElementById("verifier-result").style.display = "none";
       renderCallerUI();
@@ -910,6 +1151,7 @@
     });
 
     document.getElementById("btn-verify-card").addEventListener("click", () => {
+      stopAutoCall();
       const id = Number(document.getElementById("verify-card-input").value);
       const resEl = document.getElementById("verifier-result");
       if (!id || id < 1000 || id > 9999) {
